@@ -1,5 +1,8 @@
 package core;
 
+import java.io.File;
+import java.util.List;
+import javax.inject.Provider;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Leg;
@@ -11,10 +14,6 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.routing.impl.InputStreamGraphSource;
 import org.opentripplanner.routing.services.GraphService;
-
-import javax.inject.Provider;
-import java.io.File;
-import java.util.List;
 
 public final class OTPTripRouterFactory implements
 		Provider<TripRouter> {
@@ -55,6 +54,7 @@ public final class OTPTripRouterFactory implements
 
     @Override
 	public TripRouter get() {
+		TripRouter.Builder builder = new TripRouter.Builder(null);
 		TripRouter tripRouter = new TripRouter();
 		// OtpRoutingModule uses the modes teleport_begin_or_end and teleport_transit_stop_area
 		// -> new modes whose main mode is unknown

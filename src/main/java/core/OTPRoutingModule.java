@@ -19,7 +19,6 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Route;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.RouteUtils;
@@ -29,6 +28,7 @@ import org.matsim.core.router.StageActivityTypesImpl;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.facilities.Facility;
 import org.matsim.pt.PtConstants;
+import org.matsim.pt.router.TransitRouter;
 import org.matsim.pt.routes.ExperimentalTransitRoute;
 import org.matsim.pt.transitSchedule.TransitScheduleFactoryImpl;
 import org.matsim.pt.transitSchedule.api.Departure;
@@ -66,7 +66,7 @@ import org.opentripplanner.routing.vertextype.TransitVertex;
  * @author gleich
  *
  */
-public class OTPRoutingModule implements RoutingModule {
+public class OTPRoutingModule implements TransitRouter, RoutingModule {
 
     // Mode used for trips inserted "by hand" (not coming from OTP)
     // to get the agent to/from the beginning/end of the OTP-trip.
@@ -155,7 +155,7 @@ public class OTPRoutingModule implements RoutingModule {
 	}
 
 	@Override
-	public List<? extends PlanElement> calcRoute(Facility fromFacility, Facility toFacility, double departureTime, Person person) {
+	public List<Leg> calcRoute(Facility fromFacility, Facility toFacility, double departureTime, Person person) {
         List<Leg> baseTrip = routeLeg(fromFacility, toFacility, departureTime);
         if (baseTrip.isEmpty()) {
             return createTeleportationTrip(fromFacility.getLinkId(), toFacility.getLinkId(), TELEPORT_BEGIN_END);
