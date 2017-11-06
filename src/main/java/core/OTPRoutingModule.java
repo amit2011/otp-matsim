@@ -1,5 +1,18 @@
 package core;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -8,8 +21,7 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Route;
-import org.matsim.core.population.LegImpl;
-import org.matsim.core.population.routes.GenericRouteImpl;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.router.RoutingModule;
 import org.matsim.core.router.StageActivityTypes;
@@ -19,11 +31,21 @@ import org.matsim.facilities.Facility;
 import org.matsim.pt.PtConstants;
 import org.matsim.pt.routes.ExperimentalTransitRoute;
 import org.matsim.pt.transitSchedule.TransitScheduleFactoryImpl;
-import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt.transitSchedule.api.Departure;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.onebusaway.gtfs.model.Trip;
 import org.opentripplanner.common.model.GenericLocation;
 import org.opentripplanner.routing.algorithm.AStar;
-import org.opentripplanner.routing.core.*;
+import org.opentripplanner.routing.core.OptimizeType;
+import org.opentripplanner.routing.core.RoutingRequest;
+import org.opentripplanner.routing.core.State;
+import org.opentripplanner.routing.core.TraverseMode;
+import org.opentripplanner.routing.core.TraverseModeSet;
 import org.opentripplanner.routing.edgetype.OnboardEdge;
 import org.opentripplanner.routing.edgetype.StreetEdge;
 import org.opentripplanner.routing.edgetype.TransitBoardAlight;
@@ -32,11 +54,6 @@ import org.opentripplanner.routing.services.GraphService;
 import org.opentripplanner.routing.spt.GraphPath;
 import org.opentripplanner.routing.spt.ShortestPathTree;
 import org.opentripplanner.routing.vertextype.TransitVertex;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import org.apache.log4j.Logger;
 
 /**
  * TODO: 
@@ -158,8 +175,8 @@ public class OTPRoutingModule implements RoutingModule {
     private List<Leg> createTeleportationTrip(Id<Link> startLinkId, Id<Link> endLinkId, String teleport_mode) {
         List<Leg> egressTrip = new ArrayList<>();
         if (!startLinkId.equals(endLinkId)) {
-            Leg leg = new LegImpl(teleport_mode);
-            GenericRouteImpl route = new GenericRouteImpl(startLinkId, endLinkId);
+            Leg leg = PopulationUtils.createLeg(teleport_mode);
+            Route route = RouteUtils.createGenericRouteImpl(startLinkId, endLinkId);
 //            link Coords seem to be not accessible via pathservice
 //            set teleport travel time to 0
             route.setTravelTime(0);
@@ -296,7 +313,7 @@ public class OTPRoutingModule implements RoutingModule {
                     		stop = newStop;
                     	} else {
                         	// alighting
-                            Leg leg = new LegImpl(PT);
+                            Leg leg = PopulationUtils.createLeg(PT);
                             String newStop = ((TransitVertex) state.getVertex()).getStopId().toString();
                             TransitStopFacility accessFacility = transitSchedule.getFacilities().get(Id.create(stop, TransitStopFacility.class));
                             TransitStopFacility egressFacility = transitSchedule.getFacilities().get(Id.create(newStop, TransitStopFacility.class));
@@ -565,7 +582,7 @@ public class OTPRoutingModule implements RoutingModule {
 	
 	private Leg createStreetNetworkNonTransitLeg(String mode, List<Id<Link>> linksTraversed, 
 			long travelTime, long departureTime, double distance){
-		Leg leg = new LegImpl(mode);
+		Leg leg = PopulationUtils.createLeg(mode);
 		Route route = RouteUtils.createNetworkRoute(linksTraversed, matsimNetwork);
 		route.setTravelTime(travelTime);
 		route.setDistance(distance);

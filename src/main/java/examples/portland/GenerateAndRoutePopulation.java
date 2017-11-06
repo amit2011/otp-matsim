@@ -1,33 +1,34 @@
 package examples.portland;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import core.OTPTripRouterFactory;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.population.*;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.Population;
+import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.network.MatsimNetworkReader;
-import org.matsim.core.network.NetworkImpl;
-import org.matsim.core.population.ActivityImpl;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.population.algorithms.AbstractPersonAlgorithm;
+import org.matsim.core.population.algorithms.ParallelPersonAlgorithmUtils;
+import org.matsim.core.population.algorithms.PersonPrepareForSim;
 import org.matsim.core.router.PlanRouter;
-import org.matsim.core.router.util.TravelDisutility;
-import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
-import org.matsim.population.algorithms.AbstractPersonAlgorithm;
-import org.matsim.population.algorithms.ParallelPersonAlgorithmRunner;
-import org.matsim.population.algorithms.PersonPrepareForSim;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 import org.matsim.vehicles.VehicleReaderV1;
-
-import core.OTPTripRouterFactory;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * copy of otp-matsim/vbb
@@ -42,7 +43,7 @@ public class GenerateAndRoutePopulation {
 
 	private static Population population;
 
-	private NetworkImpl network;
+	private Network network;
 
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
 		new GenerateAndRoutePopulation().convert();
@@ -59,8 +60,8 @@ public class GenerateAndRoutePopulation {
 	private void convert() {
 		// final Scenario scenario = readScenario();
 		Config config = ConfigUtils.createConfig();
-		config.scenario().setUseVehicles(true);
-		config.scenario().setUseTransit(true);
+//		config.scenario().setUseVehicles(true);
+		config.transit().setUseTransit(true);
 		config.transit().setTransitScheduleFile("Z:/WinHome/otp-matsim/Portland/gtfs2matsim/transit-schedule.xml");
 		config.transit().setVehiclesFile("Z:/WinHome/otp-matsim/Portland/gtfs2matsim/transit-vehicles.xml");
 		config.network().setInputFile("Z:/WinHome/otp-matsim/Portland/gtfs2matsim/network.xml");
@@ -84,7 +85,7 @@ public class GenerateAndRoutePopulation {
 
 
 		population = scenario.getPopulation();
-		network = (NetworkImpl) scenario.getNetwork();
+		network = scenario.getNetwork();
 		for (int i=0; i<1000; ++i) {
 			Coord source = CoordUtils.createCoord(minX + Math.random() * (maxX - minX), minY + Math.random() * (maxY - minY));
 			Coord sink = CoordUtils.createCoord(minX + Math.random() * (maxX - minX), minY + Math.random() * (maxY - minY));
@@ -110,8 +111,8 @@ public class GenerateAndRoutePopulation {
 				"Z:/WinHome/otp-matsim/Portland/pdx/Graph.obj", false, 1, false);
 
 		// make sure all routes are calculated.
-		ParallelPersonAlgorithmRunner.run(population, config.global().getNumberOfThreads(),
-				new ParallelPersonAlgorithmRunner.PersonAlgorithmProvider() {
+		ParallelPersonAlgorithmUtils.run(population, config.global().getNumberOfThreads(),
+				new ParallelPersonAlgorithmUtils.PersonAlgorithmProvider() {
 			@Override
 			public AbstractPersonAlgorithm getPersonAlgorithm() {
 				return new PersonPrepareForSim(new PlanRouter(trf.get(), scenario.getActivityFacilities()), scenario);
@@ -130,15 +131,15 @@ public class GenerateAndRoutePopulation {
 	private Activity createWork(Coord workLocation) {
 		Activity activity = population.getFactory().createActivityFromCoord("work", workLocation);
 		activity.setEndTime(17*60*60);
-		((ActivityImpl) activity).setLinkId(network.getNearestLinkExactly(workLocation).getId());
+		(activity).setLinkId(NetworkUtils.getNearestLinkExactly(network, workLocation).getId());
 		return activity;
 	}
 
 	private Activity createHome(Coord homeLocation) {
 		Activity activity = population.getFactory().createActivityFromCoord("home", homeLocation);
 		activity.setEndTime(9*60*60);
-		Link link = network.getNearestLinkExactly(homeLocation);
-		((ActivityImpl) activity).setLinkId(link.getId());
+		Link link = NetworkUtils.getNearestLinkExactly(network, homeLocation);
+		(activity).setLinkId(link.getId());
 		return activity;
 	}
 

@@ -1,10 +1,19 @@
 package examples.ulm;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import core.OTPTripRouterFactory;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.population.*;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
@@ -13,21 +22,15 @@ import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.network.MatsimNetworkReader;
+import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.facilities.Facility;
 import org.matsim.pt.router.TransitRouter;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.vehicles.VehicleReaderV1;
-
-import core.OTPTripRouterFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * 
@@ -73,11 +76,11 @@ public class GeneratePopulationAndRunScenario {
 		config.planCalcScore().setWriteExperiencedPlans(true);
 		config.strategy().setMaxAgentPlanMemorySize(5);
 		
-		StrategySettings reRoute = new StrategySettings(Id.create("1", StrategySettings.class));
+		StrategySettings reRoute = new StrategySettings();
 		reRoute.setStrategyName("ReRoute");
 		reRoute.setWeight(0.2);
 		reRoute.setDisableAfter(15);
-		StrategySettings expBeta = new StrategySettings(Id.create("2", StrategySettings.class));
+		StrategySettings expBeta = new StrategySettings();
 		expBeta.setStrategyName("ChangeExpBeta");
 		expBeta.setWeight(0.6);
 		
@@ -123,10 +126,9 @@ public class GeneratePopulationAndRunScenario {
 	
 	static class DummyTransitRouter implements TransitRouter {
 		@Override
-		public List<Leg> calcRoute(Coord fromCoord, Coord toCoord, double departureTime, Person person) {
+		public List<Leg> calcRoute(Facility<?> fromFacility, Facility<?> toFacility, double departureTime, Person person) {
 			throw new RuntimeException();
 		}
-		
 	}
 
 	private void generatePopulation() {
@@ -171,7 +173,7 @@ public class GeneratePopulationAndRunScenario {
     private Coord randomCoord() {
         int nFac = (int) (facs.size() * Math.random());
         Coord coordsOfATransitStop = facs.get(nFac).getCoord();
-        coordsOfATransitStop.setXY(coordsOfATransitStop.getX() + Math.random() * 1000 - 500, coordsOfATransitStop.getY() + Math.random() * 1000 - 500);
+        coordsOfATransitStop = new Coord(coordsOfATransitStop.getX() + Math.random() * 1000 - 500, coordsOfATransitStop.getY() + Math.random() * 1000 - 500) ;
         // People live within 1 km of transit stops. :-)
 		return coordsOfATransitStop;
     }
