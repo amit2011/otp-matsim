@@ -17,22 +17,18 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim;
+package core;
 
 import java.util.Arrays;
 import java.util.Collection;
-import core.OTPRoutingModule;
 import org.apache.log4j.Logger;
 import org.junit.runners.Parameterized;
-import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.minibus.performance.raptor.Raptor;
-import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.pt.router.TransitRouter;
 import org.matsim.pt.router.TransitRouterConfig;
 import org.matsim.pt.router.TransitRouterImpl;
 import org.matsim.pt.router.TransitRouterImplTest;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.opentripplanner.routing.services.GraphService;
 
 /**
  * Created by amit on 17.10.17.
