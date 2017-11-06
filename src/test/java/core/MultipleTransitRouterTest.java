@@ -49,7 +49,7 @@ public class MultipleTransitRouterTest extends TransitRouterImplTest {
                 "standard",
                 "raptor",
 //                "connectionScan",
-                "otp",
+//                "otp",
 //                "r5"
         };
         return Arrays.asList(router);
