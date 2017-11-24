@@ -19,16 +19,25 @@
 
 package core;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import org.apache.log4j.Logger;
+import org.junit.Rule;
 import org.junit.runners.Parameterized;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.minibus.performance.raptor.Raptor;
+import org.matsim.core.utils.geometry.transformations.IdentityTransformation;
 import org.matsim.pt.router.TransitRouter;
 import org.matsim.pt.router.TransitRouterConfig;
 import org.matsim.pt.router.TransitRouterImpl;
 import org.matsim.pt.router.TransitRouterImplTest;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.testcases.MatsimTestUtils;
+import org.opentripplanner.routing.graph.Graph;
+import org.opentripplanner.routing.impl.InputStreamGraphSource;
+import org.opentripplanner.routing.services.GraphService;
+import org.opentripplanner.standalone.OTPMain;
 
 /**
  * Created by amit on 17.10.17.
@@ -39,13 +48,16 @@ public class MultipleTransitRouterTest extends TransitRouterImplTest {
     private static final Logger log = Logger.getLogger(MultipleTransitRouterTest.class) ;
     private final String routerType;
 
+    @Rule
+    public MatsimTestUtils helper = new MatsimTestUtils();
+
     @Parameterized.Parameters(name = "{index}: TransitRouter == {0}")
     public static Collection<Object> createRouterTypes() {
         Object[] router = new Object [] {
-                "standard",
-                "raptor",
+//                "standard",
+//                "raptor",
 //                "connectionScan",
-//                "otp",
+                "otp",
 //                "r5"
         };
         return Arrays.asList(router);
@@ -75,10 +87,12 @@ public class MultipleTransitRouterTest extends TransitRouterImplTest {
             case "connectionScan":
                 throw new RuntimeException("not implemented yet.");
             case "otp":
-//                GraphService graphService = new GraphService();
-//                Network network = null;
-//                router = new OTPRoutingModule(graphService,schedule, network, "2017-11-06", "GMT+1",
-//                        new IdentityTransformation(), false,1, false);
+                OTPMain.main(new String[]{"--build", helper.getOutputDirectory()});
+                GraphService graphService = new GraphService();
+                graphService.registerGraph("", InputStreamGraphSource.newFileGraphSource("", new File(helper.getOutputDirectory()), Graph.LoadLevel.FULL));
+                Network network = null;
+                router = new OTPRoutingModule(graphService, schedule, network, "2017-11-06", "GMT+1",
+                        new IdentityTransformation(), false,1, false);
                 break;
             default:
                 break;
