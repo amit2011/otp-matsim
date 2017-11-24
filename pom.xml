@@ -105,6 +105,12 @@
             <artifactId>matsim</artifactId>
             <version>ptRouterCleanUp-SNAPSHOT</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.conveyal/r5 -->
+        <dependency>
+            <groupId>com.conveyal</groupId>
+            <artifactId>r5</artifactId>
+            <version>3.2.0</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
