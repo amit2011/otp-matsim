@@ -1,6 +1,5 @@
 package examples.vbb;
 
-import run.RunOTP;
 import run.ExtractNetwork;
 import run.GeneratePopulationAndRunScenario;
 
@@ -16,7 +15,7 @@ public class Run {
 	 * BASEDIR should include Openstreetmap data in a file named *.osm or *.pbf (here http://download.geofabrik.de/europe/germany/berlin.html)
 	 * and a zip file with GTFS data (here http://daten.berlin.de/datensaetze/vbb-fahrplandaten-juni-2015-bis-dezember-2015)
 	 */
-    public static final String BASEDIR = "output/VBB/";
+    public static final String BASEDIR = "/Users/amit/Downloads/berlinOTP/";
     /** Created by ExtractNetwork*/
     public static final String TRANSIT_SCHEDULE_FILE = BASEDIR + "extracted-transitschedule_withoutCreatePseudoNetwork.xml";
     /** Created by ExtractNetwork*/
@@ -37,7 +36,7 @@ public class Run {
     
     public static final boolean USE_CREATE_PSEUDO_NETWORK_INSTEAD_OF_OTP_PT_NETWORK = true;
     public static final int POPULATION_SIZE = 10;
-    public static final int LAST_ITERATION = 0;
+    public static final int LAST_ITERATION = 5;
     
     public static void main(String[] args){
 //    	RunOTP.runGraphBuilder(OTP_GRAPH_DIR);
